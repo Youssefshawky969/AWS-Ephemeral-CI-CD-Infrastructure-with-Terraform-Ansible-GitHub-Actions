@@ -1,1 +1,1 @@
-# AWS-Ephemeral-CI-CD-Infrastructure-with-Terraform-Ansible-GitHub-Actions
+# AWS-Ephemeral-CI/CD-Infrastructure-with-Terraform-Ansible-GitHub-Actions
