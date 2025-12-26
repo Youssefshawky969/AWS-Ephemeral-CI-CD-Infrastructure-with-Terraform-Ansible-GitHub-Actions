@@ -1,9 +1,13 @@
-name: Ephemeral Infra CI/CD (Terraform + Ansible)
+name: Ephemeral Infra CI/CD (Terraform Cloud + Ansible)
 
 on:
   push:
     branches:
       - main
+
+env:
+  TF_CLOUD_ORG: your-hcp-org-name
+  TF_WORKSPACE: ephemeral-ci-env
 
 jobs:
   # --------------------------------------------------
@@ -13,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -25,6 +29,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Authenticate to Terraform Cloud
+        run: |
+          echo 'credentials "app.terraform.io" {
+            token = "${{ secrets.TF_API_TOKEN }}"
+          }' > ~/.terraformrc
 
       - name: Terraform Init
         run: |
@@ -40,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -52,6 +62,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Authenticate to Terraform Cloud
+        run: |
+          echo 'credentials "app.terraform.io" {
+            token = "${{ secrets.TF_API_TOKEN }}"
+          }' > ~/.terraformrc
 
       - name: Terraform Init
         run: |
@@ -80,7 +96,7 @@ jobs:
       ec2_ip: ${{ steps.tf_output.outputs.ec2_ip }}
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -92,6 +108,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Authenticate to Terraform Cloud
+        run: |
+          echo 'credentials "app.terraform.io" {
+            token = "${{ secrets.TF_API_TOKEN }}"
+          }' > ~/.terraformrc
 
       - name: Terraform Init
         run: |
@@ -116,14 +138,14 @@ jobs:
 
 
   # --------------------------------------------------
-  # JOB 4: Ansible Configure
+  # JOB 4: Ansible Configuration
   # --------------------------------------------------
   ansible_configure:
     needs: terraform_apply
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Create SSH key
@@ -149,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate web server
+      - name: Validate NGINX endpoint
         run: |
           curl -f http://${{ needs.terraform_apply.outputs.ec2_ip }}
 
@@ -163,7 +185,7 @@ jobs:
     if: always()
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -176,8 +198,14 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Wait 2 hours (TTL)
-        run: sleep 7200
+      - name: Authenticate to Terraform Cloud
+        run: |
+          echo 'credentials "app.terraform.io" {
+            token = "${{ secrets.TF_API_TOKEN }}"
+          }' > ~/.terraformrc
+
+      - name: Wait for TTL (5 mins)
+        run: sleep 300
 
       - name: Terraform Destroy
         run: |
