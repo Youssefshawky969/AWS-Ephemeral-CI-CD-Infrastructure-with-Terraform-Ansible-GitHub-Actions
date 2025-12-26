@@ -55,6 +55,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create SSH key files
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh-keygen -y -f key.pem > key.pem.pub
+
+      
+      - name: Export public key to Terraform
+        run: |
+          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
+          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
+      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -75,18 +87,6 @@ jobs:
         run: |
           cd terraform
           terraform init
-
-      - name: Create SSH key files
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keygen -y -f key.pem > key.pem.pub
-
-      
-      - name: Export public key to Terraform
-        run: |
-          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
-          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
       
       - name: Terraform Plan
         run: |
@@ -113,6 +113,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create SSH key files
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh-keygen -y -f key.pem > key.pem.pub
+
+          
+      - name: Export public key to Terraform
+        run: |
+          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
+          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
+      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -140,19 +152,6 @@ jobs:
           name: tfplan
           path: terraform
 
-      - name: Create SSH key files
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keygen -y -f key.pem > key.pem.pub
-
-          
-      - name: Export public key to Terraform
-        run: |
-          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
-          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
-
-      
       - name: Terraform Apply (from plan)
         run: |
           cd terraform
