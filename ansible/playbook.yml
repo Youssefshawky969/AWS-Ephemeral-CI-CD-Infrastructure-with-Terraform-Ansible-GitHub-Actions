@@ -1,4 +1,4 @@
-- hosts: ec2
+- hosts: web
   become: true
   tasks:
     - name: Install nginx
