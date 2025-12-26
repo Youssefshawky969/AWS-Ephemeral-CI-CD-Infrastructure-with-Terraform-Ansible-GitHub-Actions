@@ -180,7 +180,7 @@ jobs:
   # JOB 6: TTL Destroy (Always Runs)
   # --------------------------------------------------
   ttl_destroy:
-    needs: [terraform_apply, validate_app]
+    needs: [terraform_init, terraform_plan, terraform_apply, validate_app]
     runs-on: ubuntu-latest
     if: always()
 
