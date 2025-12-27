@@ -1,3 +1,7 @@
+data "aws_iam_instance_profile" "ssm" {
+  name = "ec2-ssm-role"
+}
+
 resource "aws_instance" "web" {
   ami = var.ami_id
   instance_type = var.instance_type
@@ -10,6 +14,7 @@ resource "aws_instance" "web" {
   }
 
 }
+
 
 
 
