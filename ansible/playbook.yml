@@ -4,16 +4,16 @@
 
   tasks:
     - name: Install nginx
-      command: yum install -y nginx
+      raw: yum install -y nginx
 
-    - name: Deploy index.html to NGINX default root
-      shell: |
+    - name: Enable nginx
+      raw: systemctl enable nginx
+
+    - name: Start nginx
+      raw: systemctl start nginx
+
+    - name: Deploy index.html from repo
+      raw: |
         cat << 'EOF' > /usr/share/nginx/html/index.html
         {{ lookup('file', './index.html') }}
         EOF
-    
-    - name: Enable nginx
-      command: systemctl enable nginx
-
-    - name: Start nginx
-      command: systemctl start nginx
