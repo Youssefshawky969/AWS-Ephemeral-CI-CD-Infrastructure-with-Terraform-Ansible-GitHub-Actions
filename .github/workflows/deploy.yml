@@ -7,9 +7,7 @@ on:
 
 env:
   TF_CLOUD_ORG: aws_pipelines
-  TF_WORKSPACE: aws_env
-  TF_VAR_region: ${{ secrets.AWS_REGION }}
-  TF_VAR_key_name: ${{ secrets.KEY_NAME }}
+  TF_WORKSPACE: aws_dev
 
 jobs:
   # --------------------------------------------------
@@ -47,18 +45,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Create SSH key files
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keygen -y -f key.pem > key.pem.pub
-
-      
-      - name: Export public key to Terraform
-        run: |
-          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
-          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
       
 
       - name: Setup Terraform
@@ -94,25 +80,13 @@ jobs:
     needs: terraform_plan
     runs-on: ubuntu-latest
     outputs:
-      ec2_ip: ${{ steps.tf_output.outputs.ec2_ip }}
-
+      instance_id: ${{ steps.tf_output.outputs.instance_id }}
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create SSH key files
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keygen -y -f key.pem > key.pem.pub
-
-          
-      - name: Export public key to Terraform
-        run: |
-          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
-          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
-    
-
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -138,10 +112,11 @@ jobs:
           cd terraform
           terraform apply -auto-approve tfplan
 
-      - name: Export EC2 Public IP
+      - name: Export EC2 Instance ID
         id: tf_output
         run: |
-          echo "ec2_ip=$(terraform -chdir=terraform output -raw public_ip)" >> $GITHUB_OUTPUT
+          echo "instance_id=$(terraform -chdir=terraform output -raw instance_id)" >> $GITHUB_OUTPUT
+
 
 
   # --------------------------------------------------
@@ -155,22 +130,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create SSH key
+      - name: Install Ansible and AWS SDK
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
+          pip install ansible boto3 botocore
 
       - name: Generate dynamic inventory
         run: |
           echo "[web]" > inventory.ini
-          echo "${{ needs.terraform_apply.outputs.ec2_ip }} ansible_user=ec2-user ansible_ssh_private_key_file=key.pem" >> inventory.ini
+          echo "${{ needs.terraform_apply.outputs.instance_id }} ansible_user=aws_ssm >> inventory.ini
 
       - name: Run Ansible playbook
         run: |
-          ansible-playbook \
-          -i inventory.ini ansible/playbook.yml \
-          --ssh-extra-args="-o StrictHostKeyChecking=no"
-
+          ansible-playbook -i inventory.ini ansible/playbook.yml
 
   # --------------------------------------------------
   # JOB 5: Validate Application
@@ -207,17 +178,6 @@ jobs:
             token = "${{ secrets.TF_API_TOKEN }}"
           }' > ~/.terraformrc
 
-      - name: Recreate SSH key files
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keygen -y -f key.pem > key.pem.pub
-
-      - name: Export Terraform variables
-        run: |
-          echo "TF_VAR_key_name=ci-key" >> $GITHUB_ENV
-          echo "TF_VAR_public_key=$(cat key.pem.pub)" >> $GITHUB_ENV
-          echo "TF_VAR_region=us-east-1" >> $GITHUB_ENV
       
       - name: Wait for TTL (5 mins)
         run: sleep 300
@@ -227,3 +187,9 @@ jobs:
           cd terraform
           terraform init
           terraform destroy -auto-approve
+
+
+      - name: Export EC2 Instance ID
+        id: tf_output
+        run: |
+          echo "instance_id=$(terraform -chdir=terraform output -raw instance_id)" >> $GITHUB_OUTPUT      
