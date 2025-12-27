@@ -123,6 +123,9 @@ jobs:
   # JOB 4: Ansible Configuration
   # --------------------------------------------------
   ansible_configure:
+    permissions:
+      id-token: write   # REQUIRED for OIDC
+      contents: read
     needs: terraform_apply
     runs-on: ubuntu-latest
 
