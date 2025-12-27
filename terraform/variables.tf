@@ -1,3 +1,17 @@
+variable "region" {
+  description = "AWS region"
+}
+
+
+variable "key_name" {
+  type = string
+}
+
+variable "public_key" {
+  type = string
+}
+
+
 
 variable "instance_type" {
   default = "t3.micro"
@@ -15,6 +29,7 @@ variable "env" {
   description = "Deployment environment"
   type        = string
 }
+
 
 
 
