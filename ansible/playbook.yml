@@ -1,22 +1,19 @@
 - hosts: web
   gather_facts: false
   connection: aws_ssm
-  
+
   tasks:
     - name: Install nginx
-      yum:
-        name: nginx
-        state: present
-        update_cache: yes
+      command: yum install -y nginx
 
-    - name: Copy web content
-      copy:
-        src: index.html
-        dest: /usr/share/nginx/html
-        mode: '0644'
+    - name: Deploy index.html to NGINX default root
+      shell: |
+        cat << 'EOF' > /usr/share/nginx/html/index.html
+        {{ lookup('file', './index.html') }}
+        EOF
+    
+    - name: Enable nginx
+      command: systemctl enable nginx
 
     - name: Start nginx
-      service:
-        name: nginx
-        state: started
-        enabled: true
+      command: systemctl start nginx
