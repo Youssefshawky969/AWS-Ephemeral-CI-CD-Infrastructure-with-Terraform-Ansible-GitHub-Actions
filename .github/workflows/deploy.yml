@@ -130,6 +130,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials for Ansible (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ANSIBLE_ASSUME_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
       - name: Install Ansible and AWS SDK
         run: |
           pip install ansible boto3 botocore
