@@ -1,7 +1,8 @@
 resource "aws_instance" "web" {
   ami = var.ami_id
   instance_type = var.instance_type
-  iam_instance_profile    = "ec2-ssm-role"
+  key_name = var.key_name
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   tags = {
     Name = "ci_ephemeral_web"
@@ -10,11 +11,3 @@ resource "aws_instance" "web" {
   }
 
 }
-
-
-
-
-
-
-
-
