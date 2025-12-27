@@ -78,7 +78,7 @@ jobs:
       - name: Terraform Plan
         run: |
           cd terraform
-          terraform plan -out=tfplan
+          terraform plan
 
       - name: Upload Terraform plan
         uses: actions/upload-artifact@v4
@@ -136,7 +136,7 @@ jobs:
       - name: Terraform Apply (from plan)
         run: |
           cd terraform
-          terraform apply -auto-approve tfplan
+          terraform apply -auto-approve
 
       - name: Export EC2 Public IP
         id: tf_output
