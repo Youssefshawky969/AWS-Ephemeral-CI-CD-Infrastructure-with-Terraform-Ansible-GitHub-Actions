@@ -6,7 +6,7 @@ This project demonstrates the core idea of using Terraform and Ansible in a pipe
 
 ## Workflow Diagram
 
-<img width="1101" height="619" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/dec1ef1f-728f-47fc-8bf1-2fa2eb1b498c" />
+<img width="1199" height="925" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/1e6a47b4-3b5c-45f0-9dca-f5cfcab260bf" />
 
 
 ## Objective of the Task
